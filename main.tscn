@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://nqv7sjh7c3u2"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_40hb6"]
+
+[node name="TextureRect" type="TextureRect"]
+script = ExtResource("1_40hb6")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+far = 1000.0
