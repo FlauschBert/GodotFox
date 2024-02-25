@@ -5,11 +5,12 @@ extends Node2D
 # size of SubViewport
 const _screenSize: Vector2i = Vector2i(320, 256)
 
-var _linePnts: Array[int] = [
+var _lines: Array[int] = [
 	# RUMPF
 	-50,  0,  0, 50,  0, 40,
-	 50,  0, 40, 50,  3,  6,
 	-50,  0,  0, 50,  0,-40,
+	
+	 50,  0, 40, 50,  3,  6,
 
 		 50,  0, 40, 50, -3,  6
    ,      50,  3,  6, 50, -3,  6
@@ -54,6 +55,7 @@ var _angles: Vector3 = Vector3.ZERO
 
 var _projection: Projection = Projection.IDENTITY
 
+var _rotate: bool = true
 
 
 func rotatePnt(pnt: Vector3, angles: Vector3) -> Vector3:
@@ -83,10 +85,10 @@ func _ready():
 
 func _draw():
 	var index = 0
-	while index < _linePnts.size():
-		var p1: Vector3 = nextPnt(index, _linePnts)
+	while index < _lines.size():
+		var p1: Vector3 = nextPnt(index, _lines)
 		index += 3
-		var p2: Vector3 = nextPnt(index, _linePnts)
+		var p2: Vector3 = nextPnt(index, _lines)
 		index += 3
 		
 		p1 = rotatePnt(p1, _angles)
@@ -99,5 +101,13 @@ func _draw():
 
 
 func _process(_delta):
+	if not _rotate:
+		return
+		
 	_angles += Vector3(1.0, 3.0, 2.0) * 0.5
 	queue_redraw()
+
+
+func _input(event):
+	if event.is_action_pressed("PAUSE"):
+		_rotate = not _rotate
