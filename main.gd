@@ -1,8 +1,9 @@
-extends TextureRect
+extends Node2D
 
 @onready var _camera = $Camera3D
 
-const _screenSize: Vector2i = Vector2i(480, 270)
+# size of SubViewport
+const _screenSize: Vector2i = Vector2i(320, 256)
 
 var _linePnts: Array[int] = [
 	# RUMPF
@@ -55,14 +56,14 @@ var _projection: Projection = Projection.IDENTITY
 
 
 
-func rotate(pnt: Vector3, angles: Vector3) -> Vector3:
+func rotatePnt(pnt: Vector3, angles: Vector3) -> Vector3:
 	pnt = pnt.rotated(Vector3.RIGHT, deg_to_rad(angles.x))
 	pnt = pnt.rotated(Vector3.UP, deg_to_rad(angles.y))
 	pnt = pnt.rotated(Vector3.BACK, deg_to_rad(angles.z))
 	return pnt
 
 
-func projectAndMove(pnt: Vector3, projection: Projection, screenSize: Vector2i) -> Vector2i:
+func projectAndMovePnt(pnt: Vector3, projection: Projection, screenSize: Vector2i) -> Vector2i:
 	var pnt4 = Vector4(pnt.x, pnt.y, pnt.z, 0.0) * projection
 	return Vector2i(pnt4.x + screenSize.x/2.0, pnt4.y + screenSize.y/2.0)
 
@@ -88,15 +89,15 @@ func _draw():
 		var p2: Vector3 = nextPnt(index, _linePnts)
 		index += 3
 		
-		p1 = rotate(p1, _angles)
-		p2 = rotate(p2, _angles)
+		p1 = rotatePnt(p1, _angles)
+		p2 = rotatePnt(p2, _angles)
 		
-		var p1_2i: Vector2i = projectAndMove(p1, _projection, _screenSize)
-		var p2_2i: Vector2i = projectAndMove(p2, _projection, _screenSize)
+		var p1_2i: Vector2i = projectAndMovePnt(p1, _projection, _screenSize)
+		var p2_2i: Vector2i = projectAndMovePnt(p2, _projection, _screenSize)
 		
-		draw_line(p1_2i, p2_2i, Color.CADET_BLUE)
+		draw_line(p1_2i, p2_2i, Color.FOREST_GREEN)
 
 
 func _process(_delta):
-	_angles += Vector3(1.0, 3.0, 2.0)
+	_angles += Vector3(1.0, 3.0, 2.0) * 0.5
 	queue_redraw()
