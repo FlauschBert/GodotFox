@@ -5,58 +5,33 @@ extends Node2D
 # size of SubViewport
 const _screenSize: Vector2i = Vector2i(320, 256)
 
+# use right-hand-coordinate-system (cw)
 var _triangles: Array[int] = [
 	# bottom
+	# side a
 	-50, 0, 0, 50, 0, 0,
+	# side b
 	50, 0, 0, 0, 0, 50,
+	# side c
 	0, 0, 50, -50, 0, 0,
-]
-
-var _lines: Array[int] = [
-	# RUMPF
-	-50,  0,  0, 50,  0, 40,
-	-50,  0,  0, 50,  0,-40,
 	
-	 50,  0, 40, 50,  3,  6,
-
-		 50,  0, 40, 50, -3,  6
-   ,      50,  3,  6, 50, -3,  6
-
-   ,     -50,  0,  0, 50,  3,  6
-   ,     -50,  0,  0, 50, -3,  6
-
-   ,     -50,  0,  0, 50,  3, -6
-   ,     -50,  0,  0, 50, -3, -6
-
-   ,      50,  0,-40, 50,  3, -6
-   ,      50,  0,-40, 50, -3, -6
-   ,      50,  3, -6, 50, -3, -6
-   ,      50,  3, -6, 50,  3,  6
-   ,      50, -3, -6, 50, -3,  6
-
-	#              *******   COCKPIT  *******
-
-	,      -36,  2,  0,-18,  1,  2
-	,      -36,  2,  0,-18,  4,  0
-	,      -36,  2,  0,-18,  1, -2
-
-	,      -18,  1,  2,-18,  4,  0
-	,      -18,  1, -2,-18,  4,  0
-
-	,        0,  2,  0,-18,  1,  2
-	,        0,  2,  0,-18,  1, -2
-	,        0,  2,  0,-18,  4,  0
-
-#              **** LEITWERK ********
-
-	,       14,  1, 20, 50, 11, 28
-	,       14,  1, 20, 50,  1, 20
-	,       50, 11, 28, 50,  1, 20
-
-	,       14,  1,-20, 50, 11,-28
-	,       14,  1,-20, 50,  1,-20
-	,       50, 11,-28, 50,  1,-20
+	# side a
+	50, 0, 0, -50, 0, 0,
+	-50, 0, 0, 0, 50, 50,
+	0, 50, 50, 50, 0, 0,
+	
+	# side b
+	0, 0, 50, 50, 0, 0,
+	50, 0, 0, 0, 50, 50,
+	0, 50, 50, 0, 0, 50,
+	
+	# side c
+	-50, 0, 0, 0, 0, 50,
+	0, 0, 50, 0, 50, 50,
+	0, 50, 50, -50, 0, 0
 ]
+
+var _colors: Array = [Color.CHARTREUSE, Color.DARK_ORANGE, Color.FOREST_GREEN, Color.AQUAMARINE]
 
 var _angles: Vector3 = Vector3.ZERO
 
@@ -90,22 +65,18 @@ func _ready():
 	_projection = _camera.get_camera_projection()
 
 
-func draw_lines():
-	var array: Array[int] = _triangles
-	var index = 0
-	while index < array.size():
-		var p1: Vector3 = nextPnt(index, array)
-		index += 3
-		var p2: Vector3 = nextPnt(index, array)
-		index += 3
-		
-		p1 = rotatePnt(p1, _angles)
-		p2 = rotatePnt(p2, _angles)
-		
-		var p1_2i: Vector2i = projectAndMovePnt(p1, _projection, _screenSize)
-		var p2_2i: Vector2i = projectAndMovePnt(p2, _projection, _screenSize)
-		
-		draw_line(p1_2i, p2_2i, Color.AZURE)
+func drawLine(index: int, array: Array[int]):
+	var p1: Vector3 = nextPnt(index, array)
+	index += 3
+	var p2: Vector3 = nextPnt(index, array)
+	
+	p1 = rotatePnt(p1, _angles)
+	p2 = rotatePnt(p2, _angles)
+	
+	var p1_2i: Vector2i = projectAndMovePnt(p1, _projection, _screenSize)
+	var p2_2i: Vector2i = projectAndMovePnt(p2, _projection, _screenSize)
+	
+	draw_line(p1_2i, p2_2i, Color.AZURE)
 
 
 func isTriangleVisible(p1: Vector2, p2: Vector2, p3: Vector2) -> bool:
@@ -124,10 +95,13 @@ func isTriangleVisible(p1: Vector2, p2: Vector2, p3: Vector2) -> bool:
 	return v1.x * v2.y - v1.y * v2.x > 0
 	
 
-func draw_triangles():
+func drawTriangles():
 	var array: Array[int] = _triangles
+	var color: int = -1
 	var index = 0
 	while index < array.size():
+		var linesIndex = index
+		
 		var p1: Vector3 = nextPnt(index, array)
 		index += 6
 		var p2: Vector3 = nextPnt(index, array)
@@ -139,6 +113,8 @@ func draw_triangles():
 		p2 = rotatePnt(p2, _angles)
 		p3 = rotatePnt(p3, _angles)
 		
+		color += 1
+		
 		if not isTriangleVisible(Vector2(p1.x, p1.y), Vector2(p2.x, p2.y), Vector2(p3.x, p3.y)):
 			continue
 		
@@ -146,12 +122,18 @@ func draw_triangles():
 		var p2_2i: Vector2i = projectAndMovePnt(p2, _projection, _screenSize)
 		var p3_2i: Vector2i = projectAndMovePnt(p3, _projection, _screenSize)
 		
-		draw_colored_polygon([p1_2i, p2_2i, p3_2i], Color.FOREST_GREEN)
+		draw_colored_polygon([p1_2i, p2_2i, p3_2i], _colors[color])
+		
+		drawLine(linesIndex, array)
+		linesIndex += 6
+		drawLine(linesIndex, array)
+		linesIndex += 6
+		drawLine(linesIndex, array)
+		linesIndex += 6
 
 
 func _draw():
-	draw_triangles()
-	draw_lines()
+	drawTriangles()
 
 
 func _process(_delta):
